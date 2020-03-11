@@ -132,18 +132,28 @@ class Gene():
     geneList = []
     geneIndex = 0
 
-    def __init__(self,hillLoc=None,tunnelLoc=None,grassLocs=None,eFoodLocs=None,fitness=0,numEvals=0):
+    def __init__(self,hillLoc=None,tunnelLoc=None,grassLocs=None,eFoodLocs=None):
         self.hillLoc = hillLoc
         self.tunnelLoc = tunnelLoc
         self.grassLocs = grassLocs
         self.foodLocs = eFoodLocs
-        self.fitness = fitness
-        self.numEvals = numEvals
+        self.fitness = 0
+        self.numEvals = 0
         self.occupiedSpots = []
 
     def toString(self):
 
         output = "hill: {} \n tunnel: {} \n grass: {} \n food: {} \n fitness: {} \n evals: {} \n spots: {}".format(self.hillLoc,self.tunnelLoc,join(map(str,self.grassLocs)),join(map(str,self.foodLocs)),self.fitness,self.numEvals)
+
+
+    def toLocationList(self):
+        return [self.hillLoc,self.tunnelLoc,self.grassLocs,self.foodLocs]
+
+    def importLocations(self,locations):
+        self.hillLoc = locations[0]
+        self.tunnelLoc = locations[1]
+        self.grassLocs = locations[2]
+        self.foodLocs = foodLocs
 
 
     def mutate(self):
@@ -158,15 +168,51 @@ class Gene():
     # creates 2 child genes after mating 
     # and mutating from parent genes
     @staticmethod
-    def makeBabies(daddyGene,mommyGene):
-        brother = Gene()
-        sister = Gene()
+    def makeBabies(dad,mom):
 
-        hillGeneBrother = random.random()
-        hillGeneSister = random.random()
-        tunnelGeneBrother = random.random()
-        tunnelGeneSister = random.random()
+        dadList = dad.toLocationList()
+        momList = mom.toLocationList()
+
+
+
+
+
+
+
+
+
+
+        # brother = Gene()
+        # sister = Gene()
+
+
+        # brotherGenes=[random.random(),random.random(),random.random(),random.random(),]
+        # sisterGenes=[random.random(),random.random(),random.random(),random.random(),]
+
+
+        # for x in range(4):
+            # if brotherGenes[x] >= .50:
+                # if x = 0: 
+                    # brother.hillLoc = dad.hillLoc
+                # elif x = 1:
+                    # brother.tunnelLoc = dad.tunnelLoc 
+                # elif x = 2:
+                    # brother.grassLocs = dad.grassLocs
+
+                # elif x = 3:
+
+
+        # hillGeneBrother = random.random()
+        # hillGeneSister = random.random()
+        # tunnelGeneBrother = random.random()
+        # tunnelGeneSister = random.random()
+        # grassGeneBrother = random.random()
+        # grassGeneSister = random.random()
+        # foodGeneBrother = random.random()
+        # foodGeneSister = random.random()
         #get the split value to dispere the mommy and daddy genes
+        
+
 
 
     @staticmethod
