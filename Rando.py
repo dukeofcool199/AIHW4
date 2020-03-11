@@ -124,7 +124,7 @@ class AIPlayer(Player):
 
 class Gene():
     
-    POPULATION_SIZE = 2
+    POPULATION_SIZE =10 
     MAX_EVALS = 3
     NUM_GRASS = 9 
     NUM_FOOD = 2
@@ -132,28 +132,12 @@ class Gene():
     geneList = []
     geneIndex = 0
 
-    def __init__(self,hillLoc=None,tunnelLoc=None,grassLocs=None,eFoodLocs=None):
-        self.hillLoc = hillLoc
-        self.tunnelLoc = tunnelLoc
-        self.grassLocs = grassLocs
-        self.foodLocs = eFoodLocs
+    def __init__(self,constructs=[],food=[]):
+        self.constructs = constructs
+        self.food = food
         self.fitness = 0
         self.numEvals = 0
         self.occupiedSpots = []
-
-    def toString(self):
-
-        output = "hill: {} \n tunnel: {} \n grass: {} \n food: {} \n fitness: {} \n evals: {} \n spots: {}".format(self.hillLoc,self.tunnelLoc,join(map(str,self.grassLocs)),join(map(str,self.foodLocs)),self.fitness,self.numEvals)
-
-
-    def toLocationList(self):
-        return [self.hillLoc,self.tunnelLoc,self.grassLocs,self.foodLocs]
-
-    def importLocations(self,locations):
-        self.hillLoc = locations[0]
-        self.tunnelLoc = locations[1]
-        self.grassLocs = locations[2]
-        self.foodLocs = foodLocs
 
 
     def mutate(self):
@@ -169,50 +153,7 @@ class Gene():
     # and mutating from parent genes
     @staticmethod
     def makeBabies(dad,mom):
-
-        dadList = dad.toLocationList()
-        momList = mom.toLocationList()
-
-
-
-
-
-
-
-
-
-
-        # brother = Gene()
-        # sister = Gene()
-
-
-        # brotherGenes=[random.random(),random.random(),random.random(),random.random(),]
-        # sisterGenes=[random.random(),random.random(),random.random(),random.random(),]
-
-
-        # for x in range(4):
-            # if brotherGenes[x] >= .50:
-                # if x = 0: 
-                    # brother.hillLoc = dad.hillLoc
-                # elif x = 1:
-                    # brother.tunnelLoc = dad.tunnelLoc 
-                # elif x = 2:
-                    # brother.grassLocs = dad.grassLocs
-
-                # elif x = 3:
-
-
-        # hillGeneBrother = random.random()
-        # hillGeneSister = random.random()
-        # tunnelGeneBrother = random.random()
-        # tunnelGeneSister = random.random()
-        # grassGeneBrother = random.random()
-        # grassGeneSister = random.random()
-        # foodGeneBrother = random.random()
-        # foodGeneSister = random.random()
-        #get the split value to dispere the mommy and daddy genes
-        
-
+        pass
 
 
     @staticmethod
@@ -256,48 +197,35 @@ class Gene():
 
         for x in range(Gene.POPULATION_SIZE): 
 
-            hillPlacement = Gene.pickASpotMe() 
-            occupiedSpots.append(hillPlacement)
+            newGene = Gene()
+            for x in range(11): 
+                coord = (random.randint(0,9),random.randint(0,3))
+                while coord in newGene.constructs:
+                    coord = (random.randint(0,9),random.randint(0,3)) 
+                newGene.constructs.append(coord)
+            for x in range(2):
+                coord = (random.randint(0,9),random.randint(6,9))
+                while coord in newGene.food:
+                    coord = (random.randint(0,9),random.randint(6,9)) 
+                newGene.food.append(coord)
 
 
-            tunnelPlacement = Gene.pickASpotMe()
-            while tunnelPlacement in occupiedSpots:
-                tunnelPlacement = Gene.pickASpotMe()
-            occupiedSpots.append(tunnelPlacement)
-
-            grassCoords = []
-            for x in range(Gene.NUM_GRASS):
-                grassPlacement = Gene.pickASpotMe() 
-                while grassPlacement in occupiedSpots:
-                    grassPlacement = Gene.pickASpotMe()
-                grassCoords.append(grassPlacement) 
-                occupiedSpots.append(grassPlacement)
-
-            foodCoords = []
-            for x in range(Gene.NUM_FOOD):
-                foodPlacement = Gene.pickASpotEnemy()
-                while foodPlacement in occupiedSpots:
-                    foodPlacement = Gene.pickASpotEnemy()
-                foodCoords.append(foodPlacement) 
-                occupiedSpots.append(foodPlacement)
-
-            Gene.geneList.append(Gene(hillPlacement,tunnelPlacement,grassCoords,foodCoords))
+            Gene.geneList.append(newGene)
 
     
-    @staticmethod
-    def pickASpotMe():
-            return (random.randint(0,9),random.randint(0,3))
+    
+    def pickASpotMe(self): 
+            loc = (random.randint(0,9),random.randint(0,3))
+            while loc in self.constructs:
+                loc = (random.randint(0,9),random.randint(0,3)) 
+            return loc
 
-    @staticmethod
-    def pickASpotEnemy():
-            return (random.randint(0,9),random.randint(6,9)) 
-
-    def locationUsed(coords):
-        if coords in self.occupiedSpots:
-            return True
-        else:
-            return False
-
+    def pickASpotFood(self):
+            loc = (random.randint(0,9),random.randint(6,9)) 
+            while loc in self.food:
+                loc = (random.randint(0,9),random.randint(6,9)) 
+            return loc
+                
 
 class MyUtils(): 
 
