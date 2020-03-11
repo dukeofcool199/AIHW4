@@ -102,25 +102,24 @@ class AIPlayer(Player):
     def registerWin(self, hasWon):
         theGene = Gene.geneList[Gene.geneIndex]
         if hasWon:
-            theGene.fitness + 1
-        if theGene.numEvals == Gene.MAX_EVALS:
+            theGene.fitness += 1
+        theGene.numEvals += 1
+        if theGene.numEvals >= Gene.MAX_EVALS:
             Gene.geneIndex += 1
-        else:
-            Gene.numEvals += 1
-
+            print("the new gene {}".format(Gene.geneIndex)) 
         #if we have evaluated all the genes then start making a new population
-        if Gene.geneIndex > Gene.POPULATION_SIZE: 
+        if Gene.geneIndex > Gene.POPULATION_SIZE-1: 
+            print("make new genes")
             Gene.makeNewPopulation()
+            Gene.geneIndex = 0
 
             
 
 
 class Gene():
     
-    POPULATION_SIZE =10 
+    POPULATION_SIZE = 3 
     MAX_EVALS = 3
-    NUM_GRASS = 9 
-    NUM_FOOD = 2
 
     geneList = []
     geneIndex = 0
@@ -130,6 +129,7 @@ class Gene():
         self.food = food
         self.fitness = 0
         self.numEvals = 0
+
         self.occupiedSpots = []
 
 
@@ -142,8 +142,7 @@ class Gene():
     # daddyGene: the first gene
     # mommyGene: the second gene
     #description:
-    # creates 2 child genes after mating 
-    # and mutating from parent genes
+    # creates 2 child genes after mating from parent genes
     @staticmethod
     def makeBabies(dad,mom):
         split = random.randint(0,11)
@@ -214,19 +213,24 @@ class Gene():
         for x in range(Gene.POPULATION_SIZE): 
 
             newGene = Gene()
+            newGene.constructs.clear()
+            newGene.food.clear()
             for x in range(11): 
                 coord = (random.randint(0,9),random.randint(0,3))
                 while coord in newGene.constructs:
+                    coord = None
                     coord = (random.randint(0,9),random.randint(0,3)) 
                 newGene.constructs.append(coord)
             for x in range(2):
                 coord = (random.randint(0,9),random.randint(6,9))
                 while coord in newGene.food:
+                    coord = None
                     coord = (random.randint(0,9),random.randint(6,9)) 
                 newGene.food.append(coord)
 
 
             Gene.geneList.append(newGene)
+            newGene = None
 
     
     
@@ -291,4 +295,3 @@ class MyUtils():
 
 
 Gene.populationInit()
-asciiPrintState(GameState.getBasicState())
