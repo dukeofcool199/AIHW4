@@ -170,8 +170,31 @@ class Gene():
 
 
     @staticmethod
-    def makeNewPopulation(oldPeople): 
-        newPeople = None
+    def makeNewPopulation(oldPeople):
+
+        fitPeople = sorted(oldPeople,key=lambda x: x.fitness)
+        #take the top 50 percent in terms of fitness
+        fitPeople = fitPeople[len(fitPeople)/2:]
+
+        newPop = []
+        while len(newPop) < Gene.POPULATION_SIZE:
+            #pick two parents to mate
+
+            dadIndex = random.randint(0,len(fitPeople))
+            dad = fitPeople[dadIndex]
+
+            momIndex = random.randint(0,len(fitPeople))
+            while momIndex != dadIndex:
+                momIndex = random.randint(0,len(fitPeople))
+            mom = fitPeople[momIndex]
+
+            babies = Gene.makeBabies(dad,mom)
+            newPop.append(babies[0])
+            newPop.append(babies[1])
+
+        Gene.geneList = newPop
+
+
 
 
     ##
