@@ -52,21 +52,14 @@ class AIPlayer(Player):
         # #implemented by students to return their next move
         if currentState.phase == SETUP_PHASE_1:    #stuff on my side
 
-            moves = [] 
-            moves.append(Gene.geneList[Gene.geneIndex].hillLoc)
-            moves.append(Gene.geneList[Gene.geneIndex].tunnelLoc)
-            for grass in Gene.geneList[Gene.geneIndex].grassLocs:
-                moves.append(grass)
-            return moves 
+            return Gene.geneList[Gene.geneIndex].constructs
             
         elif currentState.phase == SETUP_PHASE_2:   #stuff on foe's side
 
-            moves = [] 
-            food1 = Gene.geneList[Gene.geneIndex].foodLocs[0]
-            food2 = Gene.geneList[Gene.geneIndex].foodLocs[1]
-            moves.append(MyUtils.findClosestEmpty(currentState,food1[0],food1[1]))
-            moves.append(MyUtils.findClosestEmpty(currentState,food2[0],food2[1])) 
-            return moves
+            theGene = Gene.geneList[Gene.geneIndex]
+            theGene.food[0] = MyUtils.findClosestEmpty(currentState,theGene.food[0])
+            theGene.food[1] = MyUtils.findClosestEmpty(currentState,theGene.food[1])
+            return Gene.geneList[Gene.geneIndex].food
     
     ##
     #getMove
@@ -117,7 +110,7 @@ class AIPlayer(Player):
 
         #if we have evaluated all the genes then start making a new population
         if Gene.geneIndex > Gene.POPULATION_SIZE: 
-            pass
+            Gene.makeNewPopulation()
 
             
 
@@ -153,12 +146,36 @@ class Gene():
     # and mutating from parent genes
     @staticmethod
     def makeBabies(dad,mom):
-        pass
+        split = random.randint(0,11)
+        dadsplitB = dad.constucts[:split]
+        momSplitB = mom.constructs[split:] 
+
+        momSplitS = mom.constructs[:split]
+        dadSplitS = dad.constructs[split:]
+
+        brother = Gene() 
+        sister = Gene() 
+
+        brother.constructs.append(dadSplitB)
+        brother.constructs.append(momSplitB)
+
+        sister.constucts.append(momSplitS)
+        sister.constucts.append(dadSplitS) 
+        
+        brother.food.append(dad.food[0])
+        brother.food.append(mom.food[1])
+
+        sister.food.append(mom.food[0])
+        brother.food.append(dad.food[1])
+
+        return(brother,sister)
+
 
 
     @staticmethod
-    def makeNewPopulation(oldPeople):
+    def makeNewPopulation():
 
+        oldPeople = GeneList.copy()
         fitPeople = sorted(oldPeople,key=lambda x: x.fitness)
         #take the top 50 percent in terms of fitness
         fitPeople = fitPeople[len(fitPeople)/2:]
@@ -193,7 +210,6 @@ class Gene():
     # and resets all fitness values to 0
     @staticmethod
     def populationInit():
-        occupiedSpots = []
 
         for x in range(Gene.POPULATION_SIZE): 
 
@@ -238,10 +254,10 @@ class MyUtils():
 
     ## findClosestEmpty
     @staticmethod
-    def findClosestEmpty(currentState,x,y,whosSide="enemy"):
+    def findClosestEmpty(currentState,coords,whosSide="enemy"):
 
-        if getConstrAt(currentState,(x,y)) == None:
-            return (x,y)
+        if getConstrAt(currentState,coords) == None:
+            return coords
 
         if whosSide=="me":
             miny = 0
@@ -251,26 +267,26 @@ class MyUtils():
             maxy = 9 
         
         #check to left
-        for spot in range(x,0,-1):
-            closest = getConstrAt(currentState,(spot,y))
+        for spot in range(coords[0],0,-1):
+            closest = getConstrAt(currentState,(spot,coords[1]))
             if closest == None:
-                return (spot,y)
+                return (spot,coords[1])
         #check to right 
-        for spot in range(x,9):
-            closest = getConstrAt(currentState,(spot,y))
+        for spot in range(coords[0],9):
+            closest = getConstrAt(currentState,(spot,coords[1]))
             if closest == None:
-                return (spot,y)
+                return (spot,coords[1])
         #check up
-        for spot in range(y,minY,-1):
-            closest = getConstrAt(currentState,(x,spot))
+        for spot in range(coords[1],minY,-1):
+            closest = getConstrAt(currentState,(coords[0],spot))
             if closest == None:
-                return (x,spot)
+                return (coords[0],spot)
 
         # check down
-        for spot in range(y,maxY):
-            closest = getConstrAt(currentState,(x,spot))
+        for spot in range(coords[1],maxY):
+            closest = getConstrAt(currentState,(coords[0],spot))
             if closest == None:
-                return (x,spot)
+                return (coords[0],spot)
 
 
 
