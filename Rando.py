@@ -30,18 +30,8 @@ class AIPlayer(Player):
     ##
     def __init__(self, inputPlayerId):
         super(AIPlayer,self).__init__(inputPlayerId, "Rando")
-
-
-    ##
-    #mateGenes
-    #parameters:
-    # daddyGene: the first gene
-    # mommyGene: the second gene
-    #description:
-    # creates 2 child genes after mating 
-    # and mutating from parent genes
-    def mateGenes(daddyGene,mommyGene):
-        pass
+        self.me = inputPlayerId
+        self.enemy = 1 - inputPlayerId
 
     ##
     #getPlacement
@@ -61,22 +51,6 @@ class AIPlayer(Player):
         # numToPlace = 0
         # #implemented by students to return their next move
         if currentState.phase == SETUP_PHASE_1:    #stuff on my side
-            # numToPlace = 11
-            # moves = []
-            # for i in range(0, numToPlace):
-                # move = None
-                # while move == None:
-                    # #Choose any x location
-                    # x = random.randint(0, 9)
-                    # #Choose any y location on your side of the board
-                    # y = random.randint(0, 3)
-                    # #Set the move if this space is empty
-                    # if currentState.board[x][y].constr == None and (x, y) not in moves:
-                        # move = (x, y)
-                        # #Just need to make the space non-empty. So I threw whatever I felt like in there.
-                        # currentState.board[x][y].constr == True
-                # moves.append(move)
-            # return moves
 
             moves = [] 
             moves.append(Gene.geneList[Gene.geneIndex].hillLoc)
@@ -86,27 +60,12 @@ class AIPlayer(Player):
             return moves 
             
         elif currentState.phase == SETUP_PHASE_2:   #stuff on foe's side
-            # numToPlace = 2
-            # moves = []
-            # for i in range(0, numToPlace):
-                # move = None
-                # while move == None:
-                    # #Choose any x location
-                    # x = random.randint(0, 9)
-                    # #Choose any y location on enemy side of the board
-                    # y = random.randint(6, 9)
-                    # #Set the move if this space is empty
-                    # if currentState.board[x][y].constr == None and (x, y) not in moves:
-                        # move = (x, y)
-                        # #Just need to make the space non-empty. So I threw whatever I felt like in there.
-                        # currentState.board[x][y].constr == True
-                # moves.append(move)
-            # return moves
-        # else:
-            # return [(0, 0)]
+
             moves = [] 
-            moves.append(Gene.geneList[Gene.geneIndex].foodLocs[0])
-            moves.append(Gene.geneList[Gene.geneIndex].foodLocs[1])
+            food1 = Gene.geneList[Gene.geneIndex].foodLocs[0]
+            food2 = Gene.geneList[Gene.geneIndex].foodLocs[1]
+            moves.append(MyUtils.findClosestEmpty(currentState,food1[0],food1[1]))
+            moves.append(MyUtils.findClosestEmpty(currentState,food2[0],food2[1])) 
             return moves
     
     ##
@@ -165,7 +124,7 @@ class Gene():
         self.hillLoc = hillLoc
         self.tunnelLoc = tunnelLoc
         self.grassLocs = grassLocs
-        self.FoodLocs = eFoodLocs
+        self.foodLocs = eFoodLocs
         self.fitness = fitness
         self.numEvals = numEvals
         self.occupiedSpots = []
@@ -262,7 +221,7 @@ class Gene():
 class MyUtils(): 
 
     @staticmethod
-    def spotTaken(currentState):
+    def spotTaken(currentState,moves):
         if currentState.board[x][y].constr == None :
             return True
         else:
@@ -270,20 +229,41 @@ class MyUtils():
 
     ## findClosestEmpty
     @staticmethod
-    def findClosestEmpty(x,y,currestState,whosSide="me"):
+    def findClosestEmpty(currentState,x,y,whosSide="enemy"):
+
+        if getConstrAt(currentState,(x,y)) == None:
+            return (x,y)
+
         if whosSide=="me":
             miny = 0
             maxy = 3
         else:
             miny = 6
-            maxy = 9
-
-
-
-
+            maxy = 9 
         
+        #check to left
+        for spot in range(x,0,-1):
+            closest = getConstrAt(currentState,(spot,y))
+            if closest == None:
+                return (spot,y)
+        #check to right 
+        for spot in range(x,9):
+            closest = getConstrAt(currentState,(spot,y))
+            if closest == None:
+                return (spot,y)
+        #check up
+        for spot in range(y,minY,-1):
+            closest = getConstrAt(currentState,(x,spot))
+            if closest == None:
+                return (x,spot)
+
+        # check down
+        for spot in range(y,maxY):
+            closest = getConstrAt(currentState,(x,spot))
+            if closest == None:
+                return (x,spot)
 
 
-        
 
 Gene.populationInit()
+asciiPrintState(GameState.getBasicState())
