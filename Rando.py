@@ -107,13 +107,25 @@ class AIPlayer(Player):
     # This agent doens't learn
     #
     def registerWin(self, hasWon):
-        #method templaste, not implemented
-        pass
+        theGene = Gene.geneList[Gene.geneIndex]
+        if hasWon:
+            theGene.fitness + 1
+        if theGene.numEvals == Gene.MAX_EVALS:
+            Gene.geneIndex += 1
+        else:
+            Gene.numEvals += 1
+
+        #if we have evaluated all the genes then start making a new population
+        if Gene.geneIndex > Gene.POPULATION_SIZE: 
+            pass
+
+            
+
 
 class Gene():
     
     POPULATION_SIZE = 2
-    NUM_EVALS = 2
+    MAX_EVALS = 3
     NUM_GRASS = 9 
     NUM_FOOD = 2
 
