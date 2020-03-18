@@ -1,5 +1,6 @@
 import random
 import sys
+import time
 sys.path.append("..")  #so other modules can be found in parent dir
 from Player import *
 from Constants import *
@@ -118,7 +119,7 @@ class AIPlayer(Player):
 
 class Gene():
     
-    POPULATION_SIZE = 3 
+    POPULATION_SIZE = 10
     MAX_EVALS = 3
 
     geneList = []
@@ -128,10 +129,8 @@ class Gene():
         self.constructs = constructs
         self.food = food
         self.fitness = 0
-        self.numEvals = 0
-
-        self.occupiedSpots = []
-
+        self.numEvals = 0 
+        self.occupiedSpots = [] 
 
     def mutate(self):
         pass
@@ -146,7 +145,7 @@ class Gene():
     @staticmethod
     def makeBabies(dad,mom):
         split = random.randint(0,11)
-        dadsplitB = dad.constucts[:split]
+        dadSplitB = dad.constructs[:split]
         momSplitB = mom.constructs[split:] 
 
         momSplitS = mom.constructs[:split]
@@ -158,8 +157,8 @@ class Gene():
         brother.constructs.append(dadSplitB)
         brother.constructs.append(momSplitB)
 
-        sister.constucts.append(momSplitS)
-        sister.constucts.append(dadSplitS) 
+        sister.constructs.append(momSplitS)
+        sister.constructs.append(dadSplitS) 
         
         brother.food.append(dad.food[0])
         brother.food.append(mom.food[1])
@@ -174,21 +173,22 @@ class Gene():
     @staticmethod
     def makeNewPopulation():
 
-        oldPeople = GeneList.copy()
+        oldPeople = Gene.geneList.copy()
         fitPeople = sorted(oldPeople,key=lambda x: x.fitness)
         #take the top 50 percent in terms of fitness
-        fitPeople = fitPeople[len(fitPeople)/2:]
+        index = int(len(fitPeople)/2)
+        fitPeople = fitPeople[index:]
 
         newPop = []
         while len(newPop) < Gene.POPULATION_SIZE:
             #pick two parents to mate
 
-            dadIndex = random.randint(0,len(fitPeople))
+            dadIndex = random.randint(0,len(fitPeople)-1)
             dad = fitPeople[dadIndex]
 
-            momIndex = random.randint(0,len(fitPeople))
+            momIndex = random.randint(0,len(fitPeople)-1)
             while momIndex != dadIndex:
-                momIndex = random.randint(0,len(fitPeople))
+                momIndex = random.randint(0,len(fitPeople)-1)
             mom = fitPeople[momIndex]
 
             babies = Gene.makeBabies(dad,mom)
@@ -216,12 +216,14 @@ class Gene():
             newGene.constructs.clear()
             newGene.food.clear()
             for x in range(11): 
+                random.seed()
                 coord = (random.randint(0,9),random.randint(0,3))
                 while coord in newGene.constructs:
                     coord = None
                     coord = (random.randint(0,9),random.randint(0,3)) 
                 newGene.constructs.append(coord)
             for x in range(2):
+                random.seed()
                 coord = (random.randint(0,9),random.randint(6,9))
                 while coord in newGene.food:
                     coord = None
