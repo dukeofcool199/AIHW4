@@ -9,6 +9,7 @@ from Ant import UNIT_STATS
 from Move import Move
 from GameState import *
 from AIPlayerUtils import *
+from datetime import datetime
 
 
 ##
@@ -114,13 +115,16 @@ class AIPlayer(Player):
             Gene.makeNewPopulation()
             Gene.geneIndex = 0
 
-            
 
 
-class Gene():
+
+class Gene(object):
+
     
     POPULATION_SIZE = 10
     MAX_EVALS = 3
+    # the index where the food begins
+    FOOD_SPLIT = 11
 
     geneList = []
     geneIndex = 0
@@ -169,10 +173,12 @@ class Gene():
         return(brother,sister)
 
 
+    @staticmethod
+    def makeGene():
+        return Gene()
 
     @staticmethod
     def makeNewPopulation():
-
         oldPeople = Gene.geneList.copy()
         fitPeople = sorted(oldPeople,key=lambda x: x.fitness)
         #take the top 50 percent in terms of fitness
@@ -200,42 +206,7 @@ class Gene():
 
 
 
-    ##
-    #populationInit
-    # parameters:
-    # self
-    #Description:
-    # randomnly generates gene attribute values for the start of the learning session
-    # and resets all fitness values to 0
-    @staticmethod
-    def populationInit():
 
-        for x in range(Gene.POPULATION_SIZE): 
-
-            newGene = Gene()
-            newGene.constructs.clear()
-            newGene.food.clear()
-            for x in range(11): 
-                random.seed()
-                coord = (random.randint(0,9),random.randint(0,3))
-                while coord in newGene.constructs:
-                    coord = None
-                    coord = (random.randint(0,9),random.randint(0,3)) 
-                newGene.constructs.append(coord)
-            for x in range(2):
-                random.seed()
-                coord = (random.randint(0,9),random.randint(6,9))
-                while coord in newGene.food:
-                    coord = None
-                    coord = (random.randint(0,9),random.randint(6,9)) 
-                newGene.food.append(coord)
-
-
-            Gene.geneList.append(newGene)
-            newGene = None
-
-    
-    
     def pickASpotMe(self): 
             loc = (random.randint(0,9),random.randint(0,3))
             while loc in self.constructs:
@@ -283,17 +254,44 @@ class MyUtils():
             if closest == None:
                 return (spot,coords[1])
         #check up
-        for spot in range(coords[1],minY,-1):
+        for spot in range(coords[1],miny,-1):
             closest = getConstrAt(currentState,(coords[0],spot))
             if closest == None:
                 return (coords[0],spot)
 
         # check down
-        for spot in range(coords[1],maxY):
+        for spot in range(coords[1],maxy):
             closest = getConstrAt(currentState,(coords[0],spot))
             if closest == None:
                 return (coords[0],spot)
 
+##
+#populationInit
+# parameters:
+# self
+#Description:
+# randomnly generates gene attribute values for the start of the learning session
+# and resets all fitness values to 0
+def populationInit():
+    genes = []
+#for x in range(Gene.POPULATION_SIZE):
+    for x in range(Gene.POPULATION_SIZE):
+        currentGene = []
+        for x in range(11):
+            coord = (random.randint(0,9),random.randint(0,3))
+            while coord in currentGene:
+                coord = (random.randint(0,9),random.randint(0,3))
+            currentGene.append(coord)
+        for x in range(2):
+            coord = (random.randint(0,9),random.randint(6,9))
+            while coord in currentGene:
+                coord = (random.randint(0,9),random.randint(6,9))
+            currentGene.append(coord)
+        genes.append(currentGene)
+
+    Gene.geneList = genes
 
 
-Gene.populationInit()
+
+populationInit()
+print('hello there')
