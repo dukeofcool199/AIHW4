@@ -11,8 +11,8 @@ from GameState import *
 from AIPlayerUtils import *
 from datetime import datetime
 
-POPULATION_SIZE = 4
-MAX_EVALS = 3
+POPULATION_SIZE = 30
+MAX_EVALS = 10
 # the index where the food begins
 FITNESS = 13
 FOOD1 = 11
@@ -156,11 +156,9 @@ def makeBabies(dad,mom):
     sister.extend(momSplitS)
     sister.extend(dadSplitS)
 
-    brother.extend(dad[FOOD1])
-    brother.extend(mom[FOOD2])
+    brother.extend((dad[FOOD1],mom[FOOD2]))
 
-    sister.append(mom[FOOD1])
-    sister.append(dad[FOOD2])
+    sister.extend((mom[FOOD1],dad[FOOD2]))
 
     brother.append(0)
     brother.append(0)
@@ -195,15 +193,15 @@ def makeNewPopulation():
     geneList = newPop
 
 
-def pickASpotMe(self):
+def pickASpotMe(locs):
         loc = (random.randint(0,9),random.randint(0,3))
-        while loc in self.constructs:
+        while loc in locs:
             loc = (random.randint(0,9),random.randint(0,3))
         return loc
 
-def pickASpotFood(self):
+def pickASpotFood(locs):
         loc = (random.randint(0,9),random.randint(6,9))
-        while loc in self.food:
+        while loc in locs:
             loc = (random.randint(0,9),random.randint(6,9))
         return loc
 
@@ -263,15 +261,9 @@ def populationInit():
     for x in range(POPULATION_SIZE):
         currentGene = []
         for x in range(11):
-            coord = (random.randint(0,9),random.randint(0,3))
-            while coord in currentGene:
-                coord = (random.randint(0,9),random.randint(0,3))
-            currentGene.append(coord)
+            currentGene.append(pickASpotMe(currentGene))
         for x in range(2):
-            coord = (random.randint(0,9),random.randint(6,9))
-            while coord in currentGene:
-                coord = (random.randint(0,9),random.randint(6,9))
-            currentGene.append(coord)
+            currentGene.append(pickASpotFood(currentGene))
         #insert 0 for fitness
         currentGene.append(0)
         #insert 0 for number of times evaluated
