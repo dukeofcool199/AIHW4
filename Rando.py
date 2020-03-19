@@ -11,7 +11,7 @@ from GameState import *
 from AIPlayerUtils import *
 from datetime import datetime
 
-POPULATION_SIZE = 20 
+POPULATION_SIZE = 50 
 MAX_EVALS = 10 
 FOOD1 = 11
 FOOD2 = 12
@@ -135,10 +135,12 @@ class AIPlayer(Player):
             geneIndex = 0
 
 
-def mutate(self,gene):
-    if random.random() > .80:
+def mutate(gene):
+    if random.random() > .20:
         gene[random.randint(0,FOOD_SPLIT)] = None
-
+        gene[random.randint(0,FOOD_SPLIT)] = pickASpotMe(gene)
+        
+    return gene 
 
 
 ##
@@ -208,6 +210,9 @@ def makeNewPopulation():
         babies = makeBabies(dad,mom)
         newPop.append(babies[0])
         newPop.append(babies[1])
+
+    # for kid in newPop:
+        # kid = mutate(kid)
 
     geneList = newPop
 
