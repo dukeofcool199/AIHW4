@@ -11,6 +11,17 @@ from GameState import *
 from AIPlayerUtils import *
 from datetime import datetime
 
+POPULATION_SIZE = 10
+FIT_POPULATION_SIZE = 5
+MAX_EVALS = 3
+# the index where the food begins
+FITNESS = 13
+EVAL_COUNT = 14
+FOOD_SPLIT = 11
+
+geneIndex = 0
+geneList = []
+
 
 ##
 #AIPlayer
@@ -53,15 +64,14 @@ class AIPlayer(Player):
         # numToPlace = 0
         # #implemented by students to return their next move
         if currentState.phase == SETUP_PHASE_1:    #stuff on my side
-
-            return Gene.geneList[Gene.geneIndex].constructs
+            moves = geneList[geneIndex][:FOOD_SPLIT]
+            return moves
             
         elif currentState.phase == SETUP_PHASE_2:   #stuff on foe's side
-
-            theGene = Gene.geneList[Gene.geneIndex]
-            theGene.food[0] = MyUtils.findClosestEmpty(currentState,theGene.food[0])
-            theGene.food[1] = MyUtils.findClosestEmpty(currentState,theGene.food[1])
-            return Gene.geneList[Gene.geneIndex].food
+            geneList[geneIndex][11] = findClosestEmpty(currentState,geneList[geneIndex][11])
+            geneList[geneIndex][12] = findClosestEmpty(currentState,geneList[geneIndex][12])
+            moves = geneList[geneIndex][FOOD_SPLIT:FITNESS]
+            return moves
     
     ##
     #getMove
@@ -82,7 +92,7 @@ class AIPlayer(Player):
             selectedMove = moves[random.randint(0,len(moves) - 1)];
             
         return selectedMove
-    
+
     ##
     #getAttack
     #Description: Gets the attack to be made from the Player
@@ -102,168 +112,136 @@ class AIPlayer(Player):
     # This agent doens't learn
     #
     def registerWin(self, hasWon):
-        theGene = Gene.geneList[Gene.geneIndex]
+        global geneIndex
         if hasWon:
-            theGene.fitness += 1
-        theGene.numEvals += 1
-        if theGene.numEvals >= Gene.MAX_EVALS:
-            Gene.geneIndex += 1
-            print("the new gene {}".format(Gene.geneIndex)) 
+            geneList[geneIndex][FITNESS] += 1
+        geneList[geneIndex][EVAL_COUNT] += 1
+        if geneList[geneIndex][EVAL_COUNT] >= MAX_EVALS:
+            geneIndex += 1
+            print("the new gene {}".format(geneIndex))
         #if we have evaluated all the genes then start making a new population
-        if Gene.geneIndex > Gene.POPULATION_SIZE-1: 
+        if geneIndex > POPULATION_SIZE-1:
             print("make new genes")
-            Gene.makeNewPopulation()
-            Gene.geneIndex = 0
+            makeNewPopulation()
+            geneIndex = 0
 
 
+def mutate(self):
+    pass
 
+##
+#makeBabies
+#parameters:
+# daddyGene: the first gene
+# mommyGene: the second gene
+#description:
+# creates 2 child genes after mating from parent genes
+@staticmethod
+def makeBabies(dad,mom):
+    split = random.randint(0,11)
+    dadSplitB = dad.constructs[:split]
+    momSplitB = mom.constructs[split:]
 
-class Gene(object):
+    momSplitS = mom.constructs[:split]
+    dadSplitS = dad.constructs[split:]
 
-    
-    POPULATION_SIZE = 10
-    MAX_EVALS = 3
-    # the index where the food begins
-    FOOD_SPLIT = 11
+    brother = Gene()
+    sister = Gene()
 
-    geneList = []
-    geneIndex = 0
+    brother.constructs.append(dadSplitB)
+    brother.constructs.append(momSplitB)
 
-    def __init__(self,constructs=[],food=[]):
-        self.constructs = constructs
-        self.food = food
-        self.fitness = 0
-        self.numEvals = 0 
-        self.occupiedSpots = [] 
+    sister.constructs.append(momSplitS)
+    sister.constructs.append(dadSplitS)
 
-    def mutate(self):
-        pass
+    brother.food.append(dad.food[0])
+    brother.food.append(mom.food[1])
 
-    ##
-    #makeBabies
-    #parameters:
-    # daddyGene: the first gene
-    # mommyGene: the second gene
-    #description:
-    # creates 2 child genes after mating from parent genes
-    @staticmethod
-    def makeBabies(dad,mom):
-        split = random.randint(0,11)
-        dadSplitB = dad.constructs[:split]
-        momSplitB = mom.constructs[split:] 
+    sister.food.append(mom.food[0])
+    brother.food.append(dad.food[1])
 
-        momSplitS = mom.constructs[:split]
-        dadSplitS = dad.constructs[split:]
+    return(brother,sister)
 
-        brother = Gene() 
-        sister = Gene() 
+def makeNewPopulation():
+    oldPeople = geneList.copy()
+    fitPeople = sorted(oldPeople,key=lambda x: x.fitness)
+    #take the top 50 percent in terms of fitness
+    index = int(len(fitPeople)/2)
+    fitPeople = fitPeople[index:]
 
-        brother.constructs.append(dadSplitB)
-        brother.constructs.append(momSplitB)
+    newPop = []
+    while len(newPop) < POPULATION_SIZE:
+        #pick two parents to mate
 
-        sister.constructs.append(momSplitS)
-        sister.constructs.append(dadSplitS) 
-        
-        brother.food.append(dad.food[0])
-        brother.food.append(mom.food[1])
+        dadIndex = random.randint(0,len(fitPeople)-1)
+        dad = fitPeople[dadIndex]
 
-        sister.food.append(mom.food[0])
-        brother.food.append(dad.food[1])
-
-        return(brother,sister)
-
-
-    @staticmethod
-    def makeGene():
-        return Gene()
-
-    @staticmethod
-    def makeNewPopulation():
-        oldPeople = Gene.geneList.copy()
-        fitPeople = sorted(oldPeople,key=lambda x: x.fitness)
-        #take the top 50 percent in terms of fitness
-        index = int(len(fitPeople)/2)
-        fitPeople = fitPeople[index:]
-
-        newPop = []
-        while len(newPop) < Gene.POPULATION_SIZE:
-            #pick two parents to mate
-
-            dadIndex = random.randint(0,len(fitPeople)-1)
-            dad = fitPeople[dadIndex]
-
+        momIndex = random.randint(0,len(fitPeople)-1)
+        while momIndex != dadIndex:
             momIndex = random.randint(0,len(fitPeople)-1)
-            while momIndex != dadIndex:
-                momIndex = random.randint(0,len(fitPeople)-1)
-            mom = fitPeople[momIndex]
+        mom = fitPeople[momIndex]
 
-            babies = Gene.makeBabies(dad,mom)
-            newPop.append(babies[0])
-            newPop.append(babies[1])
+        babies = makeBabies(dad,mom)
+        newPop.append(babies[0])
+        newPop.append(babies[1])
 
-        Gene.geneList = newPop
+    geneList = newPop
 
 
-
-
-
-    def pickASpotMe(self): 
+def pickASpotMe(self):
+        loc = (random.randint(0,9),random.randint(0,3))
+        while loc in self.constructs:
             loc = (random.randint(0,9),random.randint(0,3))
-            while loc in self.constructs:
-                loc = (random.randint(0,9),random.randint(0,3)) 
-            return loc
+        return loc
 
-    def pickASpotFood(self):
-            loc = (random.randint(0,9),random.randint(6,9)) 
-            while loc in self.food:
-                loc = (random.randint(0,9),random.randint(6,9)) 
-            return loc
-                
+def pickASpotFood(self):
+        loc = (random.randint(0,9),random.randint(6,9))
+        while loc in self.food:
+            loc = (random.randint(0,9),random.randint(6,9))
+        return loc
 
-class MyUtils(): 
 
-    @staticmethod
-    def spotTaken(currentState,moves):
-        if currentState.board[x][y].constr == None :
-            return True
-        else:
-            return False
 
-    ## findClosestEmpty
-    @staticmethod
-    def findClosestEmpty(currentState,coords,whosSide="enemy"):
+def spotTaken(currentState,spot):
+    if currentState.board[spot[0]][spot[1]].constr == None :
+        return True
+    else:
+        return False
 
-        if getConstrAt(currentState,coords) == None:
-            return coords
+## findClosestEmpty
+def findClosestEmpty(currentState,coords,whosSide="enemy"):
 
-        if whosSide=="me":
-            miny = 0
-            maxy = 3
-        else:
-            miny = 6
-            maxy = 9 
-        
-        #check to left
-        for spot in range(coords[0],0,-1):
-            closest = getConstrAt(currentState,(spot,coords[1]))
-            if closest == None:
-                return (spot,coords[1])
-        #check to right 
-        for spot in range(coords[0],9):
-            closest = getConstrAt(currentState,(spot,coords[1]))
-            if closest == None:
-                return (spot,coords[1])
-        #check up
-        for spot in range(coords[1],miny,-1):
-            closest = getConstrAt(currentState,(coords[0],spot))
-            if closest == None:
-                return (coords[0],spot)
+    if getConstrAt(currentState,coords) == None:
+        return coords
 
-        # check down
-        for spot in range(coords[1],maxy):
-            closest = getConstrAt(currentState,(coords[0],spot))
-            if closest == None:
-                return (coords[0],spot)
+    if whosSide=="me":
+        miny = 0
+        maxy = 3
+    else:
+        miny = 6
+        maxy = 9
+
+    #check to left
+    for spot in range(coords[0],0,-1):
+        closest = getConstrAt(currentState,(spot,coords[1]))
+        if closest == None:
+            return (spot,coords[1])
+    #check to right
+    for spot in range(coords[0],9):
+        closest = getConstrAt(currentState,(spot,coords[1]))
+        if closest == None:
+            return (spot,coords[1])
+    #check up
+    for spot in range(coords[1],miny,-1):
+        closest = getConstrAt(currentState,(coords[0],spot))
+        if closest == None:
+            return (coords[0],spot)
+
+    # check down
+    for spot in range(coords[1],maxy):
+        closest = getConstrAt(currentState,(coords[0],spot))
+        if closest == None:
+            return (coords[0],spot)
 
 ##
 #populationInit
@@ -275,7 +253,7 @@ class MyUtils():
 def populationInit():
     genes = []
 #for x in range(Gene.POPULATION_SIZE):
-    for x in range(Gene.POPULATION_SIZE):
+    for x in range(POPULATION_SIZE):
         currentGene = []
         for x in range(11):
             coord = (random.randint(0,9),random.randint(0,3))
@@ -287,11 +265,15 @@ def populationInit():
             while coord in currentGene:
                 coord = (random.randint(0,9),random.randint(6,9))
             currentGene.append(coord)
+        #insert 0 for fitness
+        currentGene.append(0)
+        #insert 0 for number of times evaluated
+        currentGene.append(0)
         genes.append(currentGene)
 
-    Gene.geneList = genes
+    return genes
 
 
 
-populationInit()
+geneList = populationInit()
 print('hello there')
