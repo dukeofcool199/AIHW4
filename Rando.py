@@ -11,14 +11,14 @@ from GameState import *
 from AIPlayerUtils import *
 from datetime import datetime
 
-POPULATION_SIZE = 30
-MAX_EVALS = 10
-# the index where the food begins
-FITNESS = 13
+POPULATION_SIZE = 20 
+MAX_EVALS = 10 
 FOOD1 = 11
 FOOD2 = 12
-EVAL_COUNT = 14
 FOOD_SPLIT = 11
+FITNESS = 13
+EVAL = 14
+STATE = 15
 
 geneIndex = 0
 geneList = []
@@ -48,6 +48,8 @@ class AIPlayer(Player):
         super(AIPlayer,self).__init__(inputPlayerId, "Rando")
         self.me = inputPlayerId
         self.enemy = 1 - inputPlayerId
+        self.firstTurn = True
+        self.state = None
 
     ##
     #getPlacement
@@ -66,6 +68,7 @@ class AIPlayer(Player):
     def getPlacement(self, currentState):
         # numToPlace = 0
         # #implemented by students to return their next move
+        self.firstTurn = True
         if currentState.phase == SETUP_PHASE_1:    #stuff on my side
             moves = geneList[geneIndex][:FOOD_SPLIT]
             return moves
@@ -74,6 +77,7 @@ class AIPlayer(Player):
             geneList[geneIndex][11] = findClosestEmpty(currentState,geneList[geneIndex][11])
             geneList[geneIndex][12] = findClosestEmpty(currentState,geneList[geneIndex][12])
             moves = geneList[geneIndex][FOOD_SPLIT:FITNESS]
+
             return moves
     
     ##
@@ -86,6 +90,9 @@ class AIPlayer(Player):
     #Return: The Move to be made
     ##
     def getMove(self, currentState):
+        if self.firstTurn:
+            self.firsTurn = False
+            self.state = currentState
         moves = listAllLegalMoves(currentState)
         selectedMove = moves[random.randint(0,len(moves) - 1)];
 
@@ -118,19 +125,21 @@ class AIPlayer(Player):
     #
     def registerWin(self, hasWon):
         global geneIndex
-        geneList[geneIndex][EVAL_COUNT] += 1
-        if geneList[geneIndex][EVAL_COUNT] >= MAX_EVALS:
+        geneList[geneIndex][EVAL] += 1
+        if geneList[geneIndex][EVAL] >= MAX_EVALS:
+            geneList[geneIndex].append(self.state)
             geneIndex += 1
-            print("the new gene {}".format(geneIndex))
         #if we have evaluated all the genes then start making a new population
         if geneIndex > POPULATION_SIZE-1:
-            print("make new genes")
             makeNewPopulation()
             geneIndex = 0
 
 
-def mutate(self):
-    pass
+def mutate(self,gene):
+    if random.random() > .80:
+        gene[random.randint(0,FOOD_SPLIT)] = None
+
+
 
 ##
 #makeBabies
@@ -174,6 +183,16 @@ def makeNewPopulation():
     index = int(len(fitPeople)/2)
     fitPeople = fitPeople[index:]
 
+    with open('evidence.txt',"a") as file:
+        print("================\n")
+        asciiPrintState(fitPeople[len(fitPeople)-1][STATE])
+        print("eval score: {}".format(fitPeople[len(fitPeople)-1][FITNESS]))
+
+    with open('fitGenes.txt', "a") as file:
+        file.write("================\n")
+        for person in fitPeople: 
+            file.write("fitness: {}".format(person[FITNESS])) 
+        file.write("================\n")
     newPop = []
     while len(newPop) < POPULATION_SIZE:
         #pick two parents to mate
@@ -274,5 +293,5 @@ def populationInit():
 
 
 
+
 geneList = populationInit()
-print('hello there')
