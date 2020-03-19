@@ -220,13 +220,15 @@ def makeNewPopulation():
 def pickASpotMe(locs):
         loc = (random.randint(0,9),random.randint(0,3))
         while loc in locs:
-            loc = (random.randint(0,9),random.randint(0,3))
+            if not spotTaken(currentState, loc):
+                loc = (random.randint(0,9),random.randint(0,3))
         return loc
 
 def pickASpotFood(locs):
         loc = (random.randint(0,9),random.randint(6,9))
         while loc in locs:
-            loc = (random.randint(0,9),random.randint(6,9))
+            if not spotTaken(currentState,loc):
+                loc = (random.randint(0,9),random.randint(6,9))
         return loc
 
 
