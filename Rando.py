@@ -136,7 +136,6 @@ def mutate(self):
 # mommyGene: the second gene
 #description:
 # creates 2 child genes after mating from parent genes
-@staticmethod
 def makeBabies(dad,mom):
     split = random.randint(0,11)
     dadSplitB = dad.constructs[:split]
@@ -145,8 +144,8 @@ def makeBabies(dad,mom):
     momSplitS = mom.constructs[:split]
     dadSplitS = dad.constructs[split:]
 
-    brother = Gene()
-    sister = Gene()
+    brother = []
+    sister = []
 
     brother.constructs.append(dadSplitB)
     brother.constructs.append(momSplitB)
@@ -163,8 +162,9 @@ def makeBabies(dad,mom):
     return(brother,sister)
 
 def makeNewPopulation():
+    global geneList
     oldPeople = geneList.copy()
-    fitPeople = sorted(oldPeople,key=lambda x: x.fitness)
+    fitPeople = sorted(oldPeople,key=lambda x: x[FITNESS])
     #take the top 50 percent in terms of fitness
     index = int(len(fitPeople)/2)
     fitPeople = fitPeople[index:]
@@ -177,7 +177,7 @@ def makeNewPopulation():
         dad = fitPeople[dadIndex]
 
         momIndex = random.randint(0,len(fitPeople)-1)
-        while momIndex != dadIndex:
+        while momIndex == dadIndex:
             momIndex = random.randint(0,len(fitPeople)-1)
         mom = fitPeople[momIndex]
 
