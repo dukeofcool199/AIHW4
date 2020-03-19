@@ -11,11 +11,12 @@ from GameState import *
 from AIPlayerUtils import *
 from datetime import datetime
 
-POPULATION_SIZE = 10
-FIT_POPULATION_SIZE = 5
+POPULATION_SIZE = 4
 MAX_EVALS = 3
 # the index where the food begins
 FITNESS = 13
+FOOD1 = 11
+FOOD2 = 12
 EVAL_COUNT = 14
 FOOD_SPLIT = 11
 
@@ -34,6 +35,8 @@ geneList = []
 ##
 class AIPlayer(Player):
 
+    #the number of turns it took random to lose to booger, or at least untill the game ended
+    turnsToEnd = 0
     #__init__
     #Description: Creates a new Player
     #
@@ -90,7 +93,9 @@ class AIPlayer(Player):
         numAnts = len(currentState.inventories[currentState.whoseTurn].ants)
         while (selectedMove.moveType == BUILD and numAnts >= 3):
             selectedMove = moves[random.randint(0,len(moves) - 1)];
-            
+
+        if selectedMove.moveType == END:
+            geneList[geneIndex][FITNESS] += 1
         return selectedMove
 
     ##
@@ -113,8 +118,6 @@ class AIPlayer(Player):
     #
     def registerWin(self, hasWon):
         global geneIndex
-        if hasWon:
-            geneList[geneIndex][FITNESS] += 1
         geneList[geneIndex][EVAL_COUNT] += 1
         if geneList[geneIndex][EVAL_COUNT] >= MAX_EVALS:
             geneIndex += 1
@@ -138,27 +141,31 @@ def mutate(self):
 # creates 2 child genes after mating from parent genes
 def makeBabies(dad,mom):
     split = random.randint(0,11)
-    dadSplitB = dad.constructs[:split]
-    momSplitB = mom.constructs[split:]
+    dadSplitB = dad[:split]
+    momSplitB = mom[split:FOOD1]
 
-    momSplitS = mom.constructs[:split]
-    dadSplitS = dad.constructs[split:]
+    momSplitS = mom[:split]
+    dadSplitS = dad[split:FOOD1]
 
     brother = []
     sister = []
 
-    brother.constructs.append(dadSplitB)
-    brother.constructs.append(momSplitB)
+    brother.extend(dadSplitB)
+    brother.extend(momSplitB)
 
-    sister.constructs.append(momSplitS)
-    sister.constructs.append(dadSplitS)
+    sister.extend(momSplitS)
+    sister.extend(dadSplitS)
 
-    brother.food.append(dad.food[0])
-    brother.food.append(mom.food[1])
+    brother.extend(dad[FOOD1])
+    brother.extend(mom[FOOD2])
 
-    sister.food.append(mom.food[0])
-    brother.food.append(dad.food[1])
+    sister.append(mom[FOOD1])
+    sister.append(dad[FOOD2])
 
+    brother.append(0)
+    brother.append(0)
+    sister.append(0)
+    sister.append(0)
     return(brother,sister)
 
 def makeNewPopulation():
