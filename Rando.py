@@ -1,6 +1,9 @@
 import random
 import sys
 import time
+
+from src.AIPlayerUtils import listAllLegalMoves
+
 sys.path.append("..")  #so other modules can be found in parent dir
 from Player import *
 from Constants import *
@@ -135,7 +138,7 @@ class AIPlayer(Player):
             geneIndex = 0
 
 
-def mutate(gene):
+def mutate(self, gene):
     if random.random() > .20:
         gene[random.randint(0,FOOD_SPLIT)] = None
         gene[random.randint(0,FOOD_SPLIT)] = pickASpotMe(gene)
@@ -150,7 +153,7 @@ def mutate(gene):
 # mommyGene: the second gene
 #description:
 # creates 2 child genes after mating from parent genes
-def makeBabies(dad,mom):
+def makeBabies(self,dad,mom):
     split = random.randint(0,11)
     dadSplitB = dad[:split]
     momSplitB = mom[split:FOOD1]
@@ -211,26 +214,25 @@ def makeNewPopulation():
         newPop.append(babies[0])
         newPop.append(babies[1])
 
-    # for kid in newPop:
-        # kid = mutate(kid)
+    for kid in newPop:
+        kid = mutate(kid)
 
     geneList = newPop
 
 
-def pickASpotMe(locs):
+def pickASpotMe(self,locs):
         loc = (random.randint(0,9),random.randint(0,3))
         while loc in locs:
-            if not spotTaken(currentState, loc):
+            if not spotTaken(self.state,loc):
                 loc = (random.randint(0,9),random.randint(0,3))
         return loc
 
-def pickASpotFood(locs):
+def pickASpotFood(self,locs):
         loc = (random.randint(0,9),random.randint(6,9))
         while loc in locs:
-            if not spotTaken(currentState,loc):
+            if not spotTaken(self.state,loc):
                 loc = (random.randint(0,9),random.randint(6,9))
         return loc
-
 
 
 def spotTaken(currentState,spot):
@@ -287,9 +289,9 @@ def populationInit():
     for x in range(POPULATION_SIZE):
         currentGene = []
         for x in range(11):
-            currentGene.append(pickASpotMe(currentGene))
+            currentGene.append(pickASpotMe(currentGene, locs = []))
         for x in range(2):
-            currentGene.append(pickASpotFood(currentGene))
+            currentGene.append(pickASpotFood(currentGene, locs = []))
         #insert 0 for fitness
         currentGene.append(0)
         #insert 0 for number of times evaluated
@@ -302,3 +304,4 @@ def populationInit():
 
 
 geneList = populationInit()
+
